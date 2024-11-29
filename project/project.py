@@ -63,9 +63,7 @@ with open(marriage_birth_file_path,mode='r') as marriage_birth_file :
         ## print(row)
         year = row[0] # 연도
         marriage_rate = row[-1] # 혼인 건수(천)
-##        print('a')
         birth_rate = row[1] # 출산 건수(천)
-##        print('b')
 
         # 데이터 저장
         marriage_years.append(year) # 연도
@@ -88,23 +86,6 @@ width = 0.25  # 막대의 폭
 # x축 데이터(연도)를 특정 간격으로 나오도록
 ##x = [year[i] for i in range(0, len(year), 2)]
 ##print(x)
-"""
-# 각 데이터를 그래프로 그리기
-##plt.bar([i - width for i in x], aging_rates, width=width, color='red', label='고령화율')  # 고령화율
-plt.plot(year,aging_rates, linestyle=':') # 고령화
-##plt.bar(x, birth_rates, width=width, color='blue', label='출산율')  # 출산율
-plt.bar(year, birth_rates, width=width, color='blue', label='birty')  # 출산율
-##plt.bar([i + width for i in x], marriage_rates, width=width, color='green', label='결혼율')  # 결혼율
-plt.bar(year, marriage_rates, width=width, color='green', label='merry')  # 결혼율
-"""
-"""
-# 고령화
-plt.plot(year,aging_rates, color='red')
-# 출산율
-plt.bar(year,birth_rates, color='blue')
-# 결혼율
-plt.bar(year,marriage_rates,color='green')
-"""
 
 # 각 데이터 선 그래프 추가
 plt.plot(year, marriage_rates, label='결혼율', linestyle='-', marker='o', color='lightcoral')
@@ -131,7 +112,4 @@ plt.legend()
 
 # 그린 그래프를 화면에 출력
 plt.show()
-
-
-
 
