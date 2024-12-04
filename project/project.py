@@ -1,115 +1,86 @@
-# csv 파일
-# : old.csv(고령화 수) - 고령인구(천명)
-# : tp.csv (출산율, 혼인율) - 출생아 수(명), 혼인건수(건)
 
 import csv
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+
+# 첫 번째 CSV 파일 경로 (출산율)
+birth_file_path = "BirthAndMarriage.csv"
+# 두 번째 CSV 파일 경로 (유소년 인구 수)
+old_file_path = "agingIndex.csv"
 # 한국어 사용을 위한 폰트 적용
 plt.rcParams['font.family'] ='Malgun Gothic'
-# 부호 깨짐 방지
-plt.rcParams['axes.unicode_minus'] =False
 
-# 파일 경로 저장
-aging_file_path="old.csv" # 고령화 인원 수 파일
-marriage_birth_file_path="tp.csv" # 출산, 혼인 수 파일 
-
-
-# 데이터를 담기 위한 배열 선
-aging_years = [] # 고령화 인원 연도
-aging_rates = [] # 고령화 인원 수
-marriage_years = [] # 출생/혼인 연도
-marriage_rates = [] # 혼인 수
-birth_rates = [] # 출생아 수
+# 데이터 배열 초기화
+years = []    # 연도
+births = []   # 출생 수
+##merries = []  # 혼인율
+olders = []   # 고령화 비율
+yangs = [] # 유소년 인구
 
 
-# 고령인구 수 데이터 읽기
-with open(aging_file_path,mode='r') as aging_file :
-    # csv 파일 읽어오기
-    reader = csv.reader(aging_file)
+# 출산율 데이터 읽기
+with open(birth_file_path, mode='r') as file:
+    reader = csv.reader(file)  # CSV 파일을 읽기 위한 객체 생성
+    header = next(reader)      # 첫 번째 줄은 헤더이므로 건너뜀
 
-    # 파일 내용 확인
-    # 첫 줄은 제목이므로, 먼저 한 줄을 읽는다
-    header = next(reader)
+    for row in reader:
+        a = row[0]  # 첫 번째 값(연도)
+        b = row[1]  # 두 번째 값(출생 수)
+##        c = row[-1]  # 세 번째 값(혼인율)
 
-    # 반복문!
-    for row in reader :
-        year = row[0] # 연도
-        aging_rate = row[1].replace(',', '')  # 고령화 인원 수
+        years.append(int(a))
+        births.append(int(b)/1000)     
+##        merries.append(int(c)/1000) 
 
-                
-        print(type(year))
+# 고령화 지수, 유소년 인구 데이터 읽기
+with open(old_file_path, mode='r') as file:
+    reader = csv.reader(file)  # CSV 파일을 읽기 위한 객체 생성
+    header = next(reader)      # 첫 번째 줄은 헤더이므로 건너뜀
 
-        # 데이터 추가
-        aging_years.append(year) # 연도 저장
-        aging_rates.append(int(aging_rate)/10) # 고령화 인원 수 
-        
-        # 2023년까지 데이터 자르기
-        if row[0] == '2023' :
-            break
+    for row in reader:
+        a = row[0]  # 첫 번째 값(연도)
+        b = row[-4]  # 두 번째 값(노령화 지수)
+        c = int(row[4]) / int(row[1]) *100  # 유소년 비율 (유소년 수/전체인구*100)
 
-        
+        # 이미 존재하는 연도에 대해서만 추가
+        if int(a) in years:
+            olders.append(float(b)) # 노령화 지수
+            yangs.append(c) # 유소년 인구 비율
 
-# 결혼율과 출산율 데이터 읽기
-with open(marriage_birth_file_path,mode='r') as marriage_birth_file :
-    # csv 파일 읽어오기
-    reader = csv.reader(marriage_birth_file)
-    
-    # 파일 내용 확인
-    # 첫 줄은 제목이므로, 먼저 한 줄을 읽는다
-    header = next(reader)
-    
-    # 반복문!
-    for row in reader :
-        ## print(row)
-        year = row[0] # 연도
-        marriage_rate = row[-1] # 혼인 건수(천)
-        birth_rate = row[1] # 출산 건수(천)
+# 시각화를 위한 그래프 설정
+fig, ax1 = plt.subplots()  # 하나의 그래프를 그리기 위한 subplot 생성
 
-        # 데이터 저장
-        marriage_years.append(year) # 연도
-        marriage_rates.append(float(marriage_rate)/1000) # 혼인 건수
-        birth_rates.append(float(birth_rate)/1000) # 출생 건
+# 첫 번째 y축을 기준으로 출생 수를 막대그래프(bar chart)로 표시
+ax1.bar(years, births, color='tan', width=0.5, label='출생 수', alpha=0.6)
+
+# 두 번째 y축을 설정 (출생 수와 유소년 비율, 노령화 지수가 다른 범위의 값을 가지므로)
+ax2 = ax1.twinx()
+
+# 두 번째 y축을 기준으로 혼인율을 선 그래프(line plot)로 표시
+ax2.plot(years, yangs, color='r', marker='o', label='유소년 인구 비율', linewidth=2)
 
 
+# y축을 백분율로 표시
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
 
-# 데이터 병합 (연도별)
-year = sorted(set(marriage_years) & set(aging_years))
-print('year타입', type(year))
-# year의 각 값을 정수형으로 변환
-year_int = [int(y) for y in year]
-print('year_int타입', type(year_int[0]),year_int[-1])
+# 세 번째 y축을 기준으로 노령화 지수를 선 그래프(line plot)로 표시
+ax3 = ax1.twinx()  # 세 번째 y축 추가
+ax3.spines['right'].set_position(('outward', 60))  # 세 번째 y축 위치를 오른쪽으로 이동
+ax3.plot(years, olders, color='b', label='노령화 지수', linewidth=2)
 
-# 각 데이터에 대해 그래프 그리기
-width = 0.25  # 막대의 폭
-##x = range(len(year[-1]))  # 연도별 위치
-
-# x축 데이터(연도)를 특정 간격으로 나오도록
-##x = [year[i] for i in range(0, len(year), 2)]
-##print(x)
-
-# 각 데이터 선 그래프 추가
-plt.plot(year, marriage_rates, label='결혼율', linestyle='-', marker='o', color='lightcoral')
-plt.plot(year, birth_rates, label='출산율', linestyle='-', marker='o', color='lightgreen')
-plt.plot(year, aging_rates, label='고령화율', linestyle='-',marker='o', color='cornflowerblue')
+# 첫 번째 y축 레이블 설정
+ax1.set_xlabel('연도')   # x축은 연도를 표시
+ax1.set_ylabel('출생 수 (단위 : 천)')   # 첫 번째 y축은 출생 수
+ax2.set_ylabel('유소년 인구 비율') # 두 번째 y축은 유소년 인구 비율
+ax3.set_ylabel('노령화 지수')  # 세 번째 y축은 노령화 지수
 
 
-# plt.xticks(range(0,len(year),5))
-plt.title('혼인,출산,고령화 인원에 따른 변화 그래프')  # 그래프 제목
+# 통합된 범례 설정
+fig.legend(loc='upper center',  bbox_to_anchor=(0.5, 0.87),ncol=3)
 
-# 2년 단위로 x축에 표시할 연도 설정
-##print('year[0] :'+year_int[0]+'타입 : ',type(year_int[0]))
-##print('year[0] :'+year_int[-1])
-##plt.xticks(range(0, year_int[-1]+1, 2))  # 2년 간격으로 표시
-print(type(year_int[0]),type(year_int[1]),year_int[1]+1)
-plt.xlabel('연도')  # x축 레이블
-plt.ylabel('값')  # y축 레이블
 
-# 범례 표시
-plt.legend()
+# 그래프 제목 설정
+plt.title("결혼과 출산율의 감소로 인한 노령화 지수 상승", fontsize=15)
 
-# x축(연도) 범위 설정 (5년 단위)
-##plt.xlim(0, 5)
-
-# 그린 그래프를 화면에 출력
+# 그래프 출력
 plt.show()
-
