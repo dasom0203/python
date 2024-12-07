@@ -81,12 +81,3 @@ plt.title("출산율 및 유소년 비율의 감소로 인한 노령화 지수 �
 plt.show()
 
 
-"""
-# numpy를 사용해 상관계수 계산
-corr_birth_aging = np.corrcoef(births, olders)[0, 1]
-corr_young_aging = np.corrcoef(yangs, olders)[0, 1]
-
-print("출산율과 노령화 지수 간 상관계수:", corr_birth_aging)
-print("유소년 비율과 노령화 지수 간 상관계수:", corr_young_aging)
-"""
-
